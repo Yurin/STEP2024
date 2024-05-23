@@ -14,7 +14,6 @@ def calculate_hash(key):
     return hash
 
 
-
 # An item object that represents one key - value pair in the hash table.
 class Item:
     # |key|: The key of the item. The key must be a string.
@@ -89,21 +88,21 @@ class HashTable:
     # Return value: True if the item is found and deleted successfully. False
     #               otherwise.
     def delete(self, key):
-        assert type(key) == str
+        assert type(key) == str 
         bucket_index = calculate_hash(key) % self.bucket_size
         item = self.buckets[bucket_index]
         prev = None
         while item:
             if item.key == key:
-                if prev:
+                if prev != None:
                     prev.next = item.next
                 else:
                     self.buckets[bucket_index] = item.next
                 self.item_count -= 1
-                return True
+                return (item.value, True)
             prev = item
             item = item.next
-        return False
+        return (None, False)
 
     # Return the total number of items in the hash table.
     def size(self):
@@ -117,6 +116,23 @@ class HashTable:
     def check_size(self):
         assert (self.bucket_size < 100 or
                 self.item_count >= self.bucket_size * 0.3)
+        
+    def rehash(self):#再ハッシュ
+        new_bucket_size = self.bucket_size * 2
+        new_buckets = [None] * new_bucket_size
+
+        for i in range(self.bucket_size):
+            item = self.buckets[i]
+            while item:
+                #ハッシュ値を再計算し、新しいバケットリスト内でのインデックスを決定
+                new_bucket_index = calculate_hash(item.key) % new_bucket_size 
+                next_item = item.next
+                item.next = new_buckets[new_bucket_index]
+                new_buckets[new_bucket_index] = item
+                item = next_item
+
+        self.bucket_size = new_bucket_size
+        self.buckets = new_buckets
 
 
 # Test the functional behavior of the hash table.
