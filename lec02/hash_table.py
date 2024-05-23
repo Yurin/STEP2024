@@ -1,25 +1,18 @@
 import random, sys, time
 
-###########################################################################
-#                                                                         #
-# Implement a hash table from scratch! (⑅•ᴗ•⑅)                            #
-#                                                                         #
-# Please do not use Python's dictionary or Python's collections library.  #
-# The goal is to implement the data structure yourself.                   #
-#                                                                         #
-###########################################################################
-
 # Hash function.
 #
 # |key|: string
 # Return value: a hash value
 def calculate_hash(key):
     assert type(key) == str
-    # Note: This is not a good hash function. Do you see why?
     hash = 0
-    for i in key:
-        hash += ord(i)
+    prime = 31 #適当な素数
+    modulus = 2**32 #係数
+    for i, char in enumerate(key):
+        hash = (hash * prime + ord(char)) % modulus
     return hash
+
 
 
 # An item object that represents one key - value pair in the hash table.
@@ -97,10 +90,20 @@ class HashTable:
     #               otherwise.
     def delete(self, key):
         assert type(key) == str
-        #------------------------#
-        # Write your code here!  #
-        #------------------------#
-        pass
+        bucket_index = calculate_hash(key) % self.bucket_size
+        item = self.buckets[bucket_index]
+        prev = None
+        while item:
+            if item.key == key:
+                if prev:
+                    prev.next = item.next
+                else:
+                    self.buckets[bucket_index] = item.next
+                self.item_count -= 1
+                return True
+            prev = item
+            item = item.next
+        return False
 
     # Return the total number of items in the hash table.
     def size(self):
