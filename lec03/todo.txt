@@ -1,0 +1,6 @@
+rewrite README.md
+refix code week1,2
+git add qdpy
+homework week3
+
+
