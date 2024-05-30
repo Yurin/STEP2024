@@ -29,6 +29,14 @@ def read_div(line, index):
     token = {'type': 'DIV'}
     return token, index + 1
 
+def read_left_paren(line, index):
+    token = {'type': 'LPAREN'}
+    return token, index + 1
+
+def read_right_paren(line, index):
+    token = {'type': 'RPAREN'}
+    return token, index + 1
+
 def tokenize(line):
     tokens = []
     index = 0
@@ -43,22 +51,37 @@ def tokenize(line):
             (token, index) = read_times(line, index)
         elif line[index] == '/':
             (token, index) = read_div(line, index)
+        elif line[index] == '(':
+            (token, index) = read_left_paren(line, index)
+        elif line[index] == ')':
+            (token, index) = read_right_paren(line, index)
         else:
             print('Invalid character found: ' + line[index])
             exit(1)
         tokens.append(token)
     return tokens
 
-def rpn_algo(tokens):
-    priority = {'PLUS': 1, 'MINUS': 1, 'TIMES': 2, 'DIV': 2}#優先度に重み付け
-    output = [] #逆ポーランド記法に変換後
-    operators = []#一時的に演算子を保存
+def pop_operator(operators, token, priority):# 優先順位の高い演算子は、同じ優先順位かそれよりも高い優先順位の演算子に出会うまでスタックに留まる
+    return (operators and operators[-1]['type'] in priority #スタックに演算子があるかの確認
+            and 
+            priority[operators[-1]['type']] >= priority[token['type']])#現在の演算子とスタック上の演算子の優先順位を比較 
+
+def rpn_algo(tokens):#逆ポーランド記法に変換する
+    priority = {'PLUS': 1, 'MINUS': 1, 'TIMES': 2, 'DIV': 2}
+    output = []
+    operators = []
 
     for token in tokens:
-        if token['type'] == 'NUMBER':#数字はそのままoutputに行く
+        if token['type'] == 'NUMBER':
             output.append(token)
+        elif token['type'] == 'LPAREN':
+            operators.append(token)
+        elif token['type'] == 'RPAREN':
+            while operators and operators[-1]['type'] != 'LPAREN':
+                output.append(operators.pop())
+            operators.pop()  # Remove '('
         elif token['type'] in priority:
-            while (operators and operators[-1]['type'] in priority and priority[operators[-1]['type']] >= priority[token['type']]):
+            while pop_operator(operators, token, priority):
                 output.append(operators.pop())
             operators.append(token)
     
@@ -67,7 +90,7 @@ def rpn_algo(tokens):
 
     return output
 
-def evaluate_rpn(tokens):
+def evaluate_rpn(tokens):#スタックを使用して逆ポーランド記法の式を計算する
     stack = []
     for token in tokens:
         if token['type'] == 'NUMBER':
@@ -107,6 +130,27 @@ def run_test():
     test("10-2/2")
     test("789-123")
     test("100*3")
+    test("(1+2)*3")
+    test("2*(3+4)")
+    test("2+3*(4-1)")
+    test("(2+3)*(4-1)")
+    test("10/(2+3)")
+    test("(10-2)/2")
+    test("3*(2+1)")
+    test("(3+2)*2")
+    test("(10/2)-3")
+    test("10-(2/2)")
+    test("100/(5*2)")
+    test("50-(5*3)")
+    test("2*(3+4)-5")
+    test("(2+3)*(4-1)+1")
+    test("5/(2+3)*4")
+    test("2*(3-(1+1))")
+    test("(6+2)/(2*2)")
+    test("8-2*(3-1)")
+    test("10-(2+3)/5")
+    test("3*(4/2)-1")
+
     print("==== Test finished! ====\n")
 
 run_test()
