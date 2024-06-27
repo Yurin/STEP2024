@@ -111,7 +111,7 @@ class Wikipedia:
     # ページランクを計算して最も人気のあるページを出力する
     def find_most_popular_pages(self):
         damping_factor = 0.85  # ランダムに次のページに移動する確率
-        max_iter = 100  # 反復回数の最大を100に固定
+        max_iter = 1  # 反復回数の最大を100に固定
         tol = 1e-6  # 許容誤差
 
         num_pages = max(self.titles.keys()) + 1  # ページIDの最大値 + 1で配列サイズを設定
